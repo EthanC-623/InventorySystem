@@ -179,3 +179,24 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+ # Media files
+media/
+
+# Static files collected by collectstatic
+staticfiles/
+static_root/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Secrets
+.env.local
+.env.*.local
+*.pem
+*.key
