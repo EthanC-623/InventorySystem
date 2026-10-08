@@ -14,6 +14,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.READ_ONLY)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.username
+
 class Product(models.Model):
     class Category(models.TextChoices):
         MINIATURE = "MINIATURE", "Miniature"
@@ -37,6 +40,21 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # first save so self.pk exists
+        updated = []
+        if not self.sku:
+            self.sku = f"{self.brandId.name[:3].upper()}-{self.pk:06d}"
+            updated.append('sku')
+        if not self.barcode:
+            self.barcode = f"200{self.pk:09d}"  # 12 digits, see below
+            updated.append('barcode')
+        if updated:
+            super().save(update_fields=updated)
+
+    def __str__(self):
+        return self.name
+
 class Brand(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
@@ -45,12 +63,18 @@ class Brand(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.name
+
 class Location(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     address = models.CharField(max_length=200, null=True, blank=True)
     isDefault = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 class Stock_item(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -61,6 +85,9 @@ class Stock_item(models.Model):
     reorderThreshold = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.productId
 
 class Stock_movement(models.Model):
     class MovementReason(models.TextChoices):
@@ -82,3 +109,6 @@ class Stock_movement(models.Model):
     note = models.TextField(null=True, blank=True)
     created_by = models.ForeignKey('User', on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.id
