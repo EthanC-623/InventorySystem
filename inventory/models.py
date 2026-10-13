@@ -41,13 +41,13 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # first save so self.pk exists
+        super().save(*args, **kwargs)
         updated = []
         if not self.sku:
             self.sku = f"{self.brandId.name[:3].upper()}-{self.pk:06d}"
             updated.append('sku')
         if not self.barcode:
-            self.barcode = f"200{self.pk:09d}"  # 12 digits, see below
+            self.barcode = f"200{self.pk:09d}"
             updated.append('barcode')
         if updated:
             super().save(update_fields=updated)

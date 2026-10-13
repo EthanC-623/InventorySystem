@@ -1,0 +1,36 @@
+
+<div class="row">
+    <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Product Data</h5>
+            </div>
+            <div class="card p-3">
+                <table class="table table-hover table-dark table-striped-columns">
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>Name</th>
+                            <th>SKU</th>
+                            <th>Brand</th>
+                            <th>Price</th>
+                            <th>Archived</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products_data %}
+                        <tr class="position-relative">
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.sku }}</td>
+                            <td>{{ product.brandId }}</td>
+                            <td>£{{ product.price|floatformat:2 }}</td>
+                            <td>{{ product.archived }}</td>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
