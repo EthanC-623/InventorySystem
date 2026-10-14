@@ -5,8 +5,25 @@
             <div class="card-header">
                 <h5 class="card-title mb-0">Product Data</h5>
             </div>
+            <div class="row">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Primary
+                    </button>
+                    <div class="dropdown-menu" style="">
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Separated link</a>
+                    </div>
+                </div>
+                <div>
+                    <h5>Select a product to view its details:</h5>
+                </div>
+            </div>
             <div class="card p-3">
-                <table class="table table-hover table-dark table-striped-columns">
+                <table class="table table-hover table-dark table-striped-columns table-clickable">
                     <thead>
                         <tr>
                             <th>id</th>
@@ -14,18 +31,22 @@
                             <th>SKU</th>
                             <th>Brand</th>
                             <th>Price</th>
-                            <th>Archived</th>
+                            <th style="width:5%">Archived</th>
+                            <th style="width:5%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for product in products_data %}
-                        <tr class="position-relative">
+                        <tr data-href="{% url 'viewProduct' product.id %}">
                             <td>{{ product.id }}</td>
                             <td>{{ product.name }}</td>
                             <td>{{ product.sku }}</td>
                             <td>{{ product.brandId }}</td>
                             <td>£{{ product.price|floatformat:2 }}</td>
-                            <td>{{ product.archived }}</td>
+                            <td>{{ product.archived|yesno:"Yes,No" }}</td>
+                            <td>
+                                <a href="{% url 'viewProduct' product.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </td>
                         </tr>
                         {%endfor%}
                     </tbody>

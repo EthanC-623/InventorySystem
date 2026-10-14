@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="h3 mb-3"><strong>Product</strong> {{ product.id }}</h1>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Product Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <p><strong>ID:</strong> {{ product.id }}</p>
+                        <p><strong>Name:</strong> {{ product.name }}</p>
+                        <p><strong>Barcode:</strong> {{ product.barcode }}</p>
+                        <p><strong>SKU:</strong> {{ product.sku }}</p>
+                        <p><strong>Brand:</strong> {{ product.brandId }}</p>
+                        <p><strong>Category:</strong> {{ product.get_category_display }}</p>
+                        <p><strong>Price:</strong> £{{ product.price|floatformat:2 }}</p>
+
+                        {% if product.attributes %}
+                            <p class="mb-1"><strong>Attributes:</strong></p>
+                            <ul>
+                                {% for key, value in product.attributes.items %}
+                                    <li>{{ key }}: {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        <p><strong>Archived:</strong> {{ product.archived|yesno:"Yes,No" }}</p>
+                        <p><strong>Created:</strong> {{ product.created_at|date:"d M Y, H:i" }}</p>
+                        <p><strong>Updated:</strong> {{ product.updated_at|date:"d M Y, H:i" }}</p>
+                    </div>
+
+                    {% if product.imageURl %}
+                        <div class="col-md-5 text-center">
+                            <img src="{{ product.imageURl }}" alt="{{ product.name }}" 
+                            class="img-fluid rounded" style="max-height: 600px;">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

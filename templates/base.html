@@ -16,6 +16,7 @@
 	<title>Inventory System</title>
 
 	<link href="{% static 'css/app.css' %}" rel="stylesheet">
+	<link href="{% static 'css/site.css' %}" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
@@ -39,25 +40,25 @@
             </a>
 					</li>
 
-					<li class="sidebar-item {% if request.resolver_match.url_name == 'products' %}active{% endif %}">
+					<li class="sidebar-item {% if 'products' in request.path %}active{% endif %}">
 						<a class="sidebar-link" href="{% url 'products' %}">
               <i class="align-middle" data-feather="tag"></i> <span class="align-middle">Products</span>
             </a>
 					</li>
 
-					<li class="sidebar-item {% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">
+					<li class="sidebar-item {% if 'inventory' in request.path %}active{% endif %}">
 						<a class="sidebar-link" href="{% url 'inventory' %}">
               <i class="align-middle" data-feather="package"></i> <span class="align-middle">Inventory</span>
             </a>
 					</li>
 
-					<li class="sidebar-item {% if request.resolver_match.url_name == 'sales' %}active{% endif %}">
+					<li class="sidebar-item {% if 'sales' in request.path %}active{% endif %}">
 						<a class="sidebar-link" href="{% url 'sales' %}">
               <i class="align-middle" data-feather="shopping-cart"></i> <span class="align-middle">Sales</span>
             </a>
 					</li>
 
-					<li class="sidebar-item {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+					<li class="sidebar-item {% if 'reports' in request.path %}active{% endif %}">
 						<a class="sidebar-link" href="{% url 'reports' %}">
               <i class="align-middle" data-feather="pie-chart"></i> <span class="align-middle">Reports</span>
             </a>
@@ -73,7 +74,7 @@
 				<a class="sidebar-toggle js-sidebar-toggle">
           <i class="hamburger align-self-center"></i>
         </a>
-
+<!-- Notifications -->
 				<div class="navbar-collapse collapse">
 					<ul class="navbar-nav navbar-align">
 						<li class="nav-item dropdown">
@@ -83,7 +84,6 @@
 									<span class="indicator">4</span>
 								</div>
 							</a>
-<!-- Notifications -->
 							<div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
 								<div class="dropdown-menu-header">
 									4 New Notifications
@@ -149,7 +149,7 @@
               </a>
 
 							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
-                <img src="{% static 'img/avatars/avatar.jpg' %}" class="avatar img-fluid rounded me-1" alt="Charles Hall" /> <span class="text-dark">Charles Hall</span>
+                <img src="{% static 'img/avatars/andrsrxn--user-circle(2).png' %}" class="avatar img-fluid rounded me-1" /> <span class="text-dark">Username</span>
               </a>
 							<div class="dropdown-menu dropdown-menu-end">
 								<a class="dropdown-item" href="{% static 'pages-profile.html' %}"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
@@ -185,6 +185,7 @@
 	</div>
 
 	<script src="{% static 'js/app.js' %}"></script>
+	<script src="{% static 'js/site.js' %}"></script>
 
 </body>
 

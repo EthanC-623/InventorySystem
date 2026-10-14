@@ -16,6 +16,13 @@ def products(request):
     }
     return render(request, "products.html", context)
 
+def viewProduct(request, product_id):
+    product = Product.objects.get(id=product_id)
+    context = {
+        "product": product
+    }
+    return render(request, "viewProduct.html", context)
+
 def reports(request):
     return render(request, "reports.html")
 
