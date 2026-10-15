@@ -18,6 +18,10 @@
 	<link href="{% static 'css/app.css' %}" rel="stylesheet">
 	<link href="{% static 'css/site.css' %}" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+	<link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+	<script src="{% static 'js/datatables.min.js' %}"></script>
+	
 </head>
 
 <body>
@@ -186,7 +190,16 @@
 
 	<script src="{% static 'js/app.js' %}"></script>
 	<script src="{% static 'js/site.js' %}"></script>
-
+	
+	<script defer>
+    	new DataTable('#productsTable', {
+			columnDefs: [
+				{ target: 7, orderable: false },
+			],
+			order: [2, 'desc'],
+			pageLength: 25,
+		});
+	</script>
 </body>
 
 </html>

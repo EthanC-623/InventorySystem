@@ -1,57 +1,95 @@
-
 <div class="row">
     <div class="col-12">
           <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Product Data</h5>
+                <h5 class="card-title">Product Data</h5>
+                <h6 class="card-subtitle text-muted">Select a product to view its details:</h6>
             </div>
-            <div class="row">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Primary
-                    </button>
-                    <div class="dropdown-menu" style="">
-                        <a class="dropdown-item" href="#">Action</a>
-                        <a class="dropdown-item" href="#">Another action</a>
-                        <a class="dropdown-item" href="#">Something else here</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Separated link</a>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                            Filter
+                        </button>
+                        <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
+                            <div class="mb-3">
+                                <label for="filter-archived" class="form-label">Archived</label>
+                                <select name="archived" id="filter-archived" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                    <option value="no"  {% if request.GET.archived == 'no' %}selected{% endif %}>Active only</option>
+                                    <option value="yes" {% if request.GET.archived == 'yes' %}selected{% endif %}>Archived only</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="filter-brand" class="form-label">Brand</label>
+                                <select name="brand" id="filter-brand" class="form-select form-select-sm">
+                                    <option value="">All brands</option>
+                                {% for brand in brands %}
+                                    <option value="{{ brand.id }}"
+                                            {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ brand }}
+                                    </option>
+                                {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="filter-category" class="form-label">Category</label>
+                                <select name="category" id="filter-category" class="form-select form-select-sm">
+                                    <option value="">All categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.0 }}"
+                                            {% if request.GET.category == category.0|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.1 }}
+                                    </option>
+                                {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'products' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div>
-                    <h5>Select a product to view its details:</h5>
+                <div class="card">
+                    <table id="productsTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>id</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>SKU</th>
+                                <th>Brand</th>
+                                <th>Price</th>
+                                <th style="width:5%">Archived</th>
+                                <th style="width:10%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products_data %}
+                            <tr data-href="{% url 'viewProduct' product.id %}">
+                                <td>{{ product.id }}</td>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.get_category_display }}</td>
+                                <td>{{ product.sku }}</td>
+                                <td>{{ product.brandId }}</td>
+                                <td>£{{ product.price|floatformat:2 }}</td>
+                                <td>{{ product.archived|yesno:"Yes,No" }}</td>
+                                <td>
+                                    <a href="{% url 'viewProduct' product.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{% url 'viewProduct' product.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <div class="card p-3">
-                <table class="table table-hover table-dark table-striped-columns table-clickable">
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>Name</th>
-                            <th>SKU</th>
-                            <th>Brand</th>
-                            <th>Price</th>
-                            <th style="width:5%">Archived</th>
-                            <th style="width:5%">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products_data %}
-                        <tr data-href="{% url 'viewProduct' product.id %}">
-                            <td>{{ product.id }}</td>
-                            <td>{{ product.name }}</td>
-                            <td>{{ product.sku }}</td>
-                            <td>{{ product.brandId }}</td>
-                            <td>£{{ product.price|floatformat:2 }}</td>
-                            <td>{{ product.archived|yesno:"Yes,No" }}</td>
-                            <td>
-                                <a href="{% url 'viewProduct' product.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </td>
-                        </tr>
-                        {%endfor%}
-                    </tbody>
-                </table>
-            </div>
+            </div>  
+            
         </div>
     </div>
 </div>

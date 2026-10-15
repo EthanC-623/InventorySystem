@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from inventory.models import Product
+from inventory.models import Brand, Product
 
 # Create your views here.
 def home(request):
@@ -10,9 +10,27 @@ def inventory(request):
     return render(request, "inventory.html")
 
 def products(request):
-    products_data = Product.objects.all()
+    products_data = Product.objects.select_related("brandId")
+
+    archived = request.GET.get("archived", "")
+    brand = request.GET.get("brand", "")
+    category = request.GET.get("category", "")
+
+    if archived == "no":
+        products_data = products_data.filter(archived=False)
+    elif archived == "yes":
+        products_data = products_data.filter(archived=True)
+
+    if brand.isdigit():
+        products_data = products_data.filter(brandId=brand)
+
+    if category in Product.Category.values:
+        products_data = products_data.filter(category=category)
+
     context = {
-        "products_data": products_data
+        "products_data": products_data,
+        "brands": Brand.objects.order_by("name"),
+        "categories": Product.Category.choices,
     }
     return render(request, "products.html", context)
 
