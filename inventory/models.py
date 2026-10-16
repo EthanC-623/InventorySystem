@@ -87,7 +87,7 @@ class Stock_item(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.productId
+        return self.productId.name
 
 class Stock_movement(models.Model):
     class MovementReason(models.TextChoices):

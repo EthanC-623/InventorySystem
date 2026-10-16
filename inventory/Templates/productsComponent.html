@@ -1,61 +1,70 @@
 <div class="row">
     <div class="col-12">
           <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">Product Data</h5>
-                <h6 class="card-subtitle text-muted">Select a product to view its details:</h6>
-            </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-dark dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                            Filter
-                        </button>
-                        <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
-                            <div class="mb-3">
-                                <label for="filter-archived" class="form-label">Archived</label>
-                                <select name="archived" id="filter-archived" class="form-select form-select-sm">
-                                    <option value="">All</option>
-                                    <option value="no"  {% if request.GET.archived == 'no' %}selected{% endif %}>Active only</option>
-                                    <option value="yes" {% if request.GET.archived == 'yes' %}selected{% endif %}>Archived only</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="filter-brand" class="form-label">Brand</label>
-                                <select name="brand" id="filter-brand" class="form-select form-select-sm">
-                                    <option value="">All brands</option>
-                                {% for brand in brands %}
-                                    <option value="{{ brand.id }}"
-                                            {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ brand }}
-                                    </option>
-                                {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="filter-category" class="form-label">Category</label>
-                                <select name="category" id="filter-category" class="form-select form-select-sm">
-                                    <option value="">All categories</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.0 }}"
-                                            {% if request.GET.category == category.0|stringformat:"s" %}selected{% endif %}>
-                                        {{ category.1 }}
-                                    </option>
-                                {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <a href="{% url 'products' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
-                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
                 <div class="card">
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                Filter
+                            </button>
+                            <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
+
+                                <div class="mb-3">
+                                    <label for="filter-category" class="form-label">Category</label>
+                                    <select name="category" id="filter-category" class="form-select form-select-sm">
+                                        <option value="">All categories</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.0 }}"
+                                                {% if request.GET.category == category.0|stringformat:"s" %}selected{% endif %}>
+                                            {{ category.1 }}
+                                        </option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="filter-brand" class="form-label">Brand</label>
+                                    <select name="brand" id="filter-brand" class="form-select form-select-sm">
+                                        <option value="">All brands</option>
+                                    {% for brand in brands %}
+                                        <option value="{{ brand.id }}"
+                                                {% if request.GET.brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ brand }}
+                                        </option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="filter-archived" class="form-label">Archived</label>
+                                    <select name="archived" id="filter-archived" class="form-select form-select-sm">
+                                        <option value="">All</option>
+                                        <option value="no"  {% if request.GET.archived == 'no' %}selected{% endif %}>Active only</option>
+                                        <option value="yes" {% if request.GET.archived == 'yes' %}selected{% endif %}>Archived only</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'products' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                </div>
+                                
+                            </form>
+                        </div>
+
+                        {% if active_category %}
+                            <span class="badge text-bg-primary">Category: {{ active_category }}</span>
+                        {% endif %}
+                        {% if active_brand %}
+                            <span class="badge text-bg-primary">Brand: {{ active_brand }}</span>
+                        {% endif %}
+                        {% if active_archived %}
+                            <span class="badge text-bg-primary">{{ active_archived }}</span>
+                        {% endif %}
+
+                    </div>
                     <table id="productsTable" class="display">
                         <thead>
                             <tr>

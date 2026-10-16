@@ -16,21 +16,33 @@ def products(request):
     brand = request.GET.get("brand", "")
     category = request.GET.get("category", "")
 
+    active_category = None
+    active_brand = None
+    active_archived = None
+
     if archived == "no":
         products_data = products_data.filter(archived=False)
+        active_archived = "Active only"
     elif archived == "yes":
         products_data = products_data.filter(archived=True)
+        active_archived = "Archived only"
 
     if brand.isdigit():
-        products_data = products_data.filter(brandId=brand)
+        active_brand = Brand.objects.filter(id=brand).first()
+        if active_brand:
+            products_data = products_data.filter(brandId=brand)
 
     if category in Product.Category.values:
+        active_category = Product.Category(category).label
         products_data = products_data.filter(category=category)
 
     context = {
         "products_data": products_data,
         "brands": Brand.objects.order_by("name"),
         "categories": Product.Category.choices,
+        "active_category": active_category,
+        "active_brand": active_brand,
+        "active_archived": active_archived,
     }
     return render(request, "products.html", context)
 
