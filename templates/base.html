@@ -199,6 +199,14 @@
 			pageLength: 25,
 		});
 	</script>
+	<script defer>
+    	new DataTable('#inventoryTable', {
+			columnDefs: [
+				{ target: 6, orderable: false },
+			],
+			pageLength: 25,
+		});
+	</script>
 </body>
 
 </html>

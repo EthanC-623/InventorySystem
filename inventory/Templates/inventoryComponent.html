@@ -1,0 +1,85 @@
+<div class="row">
+    <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+                <div class="card">
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                Filter
+                            </button>
+                            <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
+
+                                <div class="mb-3">
+                                    <label for="filter-location" class="form-label">Location</label>
+                                    <select name="location" id="filter-location" class="form-select form-select-sm">
+                                        <option value="">All locations</option>
+                                    {% for location in locations %}
+                                        <option value="{{ location.id }}"
+                                                {% if request.GET.location == location.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ location }}
+                                        </option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="filter-reorderStatus" class="form-label">Reorder Status</label>
+                                    <select name="reorderStatus" id="filter-reorderStatus" class="form-select form-select-sm">
+                                        <option value="">All</option>
+                                        <option value="Not Reordering"  {% if request.GET.reorderStatus == 'Not Reordering' %}selected{% endif %}>Not Reordering</option>
+                                        <option value="Needs Reordering" {% if request.GET.reorderStatus == 'Needs Reordering' %}selected{% endif %}>Needs Reordering</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'inventory' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                </div>
+                                
+                            </form>
+                        </div>
+                        {% if active_location %}
+                            <span class="badge text-bg-primary">Location: {{ active_location }}</span>
+                        {% endif %}
+                        {% if active_reorderStatus %}
+                            <span class="badge text-bg-primary">{{ active_reorderStatus }}</span>
+                        {% endif %}
+
+                    </div>
+                    <table id="inventoryTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Location</th>
+                                <th>Quantity</th>
+                                <th>Reserved Quantity</th>
+                                <th>Reorder Threshold</th>
+                                <th>Updated At</th>
+                                <th style="width:10%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inventory_item in inventory_data %}
+                            <tr data-href="{% url 'viewProduct' inventory_item.productId.id %}">
+                                <td>{{ inventory_item.productId }}</td>
+                                <td>{{ inventory_item.locationId }}</td>
+                                <td>{{ inventory_item.quantity }}</td>
+                                <td>{{ inventory_item.reservedQuantity }}</td>
+                                <td>{{ inventory_item.reorderThreshold }}</td>
+                                <td>{{ inventory_item.updated_at }}</td>
+                                <td>
+                                    <a href="{% url 'viewProduct' inventory_item.productId.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{% url 'viewProduct' inventory_item.productId.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>  
+            
+        </div>
+    </div>
+</div>

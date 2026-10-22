@@ -1,13 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from inventory.models import Brand, Product
+from django.db.models import F
+from inventory.models import Brand, Location, Product, Stock_item
 
 # Create your views here.
 def home(request):
     return render(request, "home.html")
-
-def inventory(request):
-    return render(request, "inventory.html")
 
 def products(request):
     products_data = Product.objects.select_related("brandId")
@@ -45,6 +43,36 @@ def products(request):
         "active_archived": active_archived,
     }
     return render(request, "products.html", context)
+
+def inventory(request):
+    inventory_data = Stock_item.objects.select_related("locationId")
+
+    location = request.GET.get("location", "")
+    reorderStatus = request.GET.get("reorderStatus", "")
+
+    active_location = None
+    active_reorderStatus = None
+
+    if reorderStatus == "Not Reordering":
+        inventory_data = inventory_data.filter(quantity__gt=F("reorderThreshold"))
+        active_reorderStatus = "Not Reordering"
+    elif reorderStatus == "Needs Reordering":
+        inventory_data = inventory_data.filter(quantity__lte=F("reorderThreshold"))
+        active_reorderStatus = "Needs Reordering"
+
+    if location.isdigit():
+        active_location = Location.objects.filter(id=location).first()
+        if active_location:
+            inventory_data = inventory_data.filter(locationId=location)
+    
+
+    context = {
+        "inventory_data": inventory_data,
+        "locations": Location.objects.order_by("name"),
+        "active_location": active_location,
+        "active_reorderStatus": active_reorderStatus,
+    }
+    return render(request, "inventory.html", context)
 
 def viewProduct(request, product_id):
     product = Product.objects.get(id=product_id)
