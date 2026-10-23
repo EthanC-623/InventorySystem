@@ -33,13 +33,14 @@
                         <p><strong>Created:</strong> {{ product.created_at|date:"d M Y, H:i" }}</p>
                         <p><strong>Updated:</strong> {{ product.updated_at|date:"d M Y, H:i" }}</p>
                     </div>
-
-                    {% if product.imageURl %}
-                        <div class="col-md-5 text-center">
-                            <img src="{{ product.imageURl }}" alt="{{ product.name }}" 
-                            class="img-fluid rounded" style="max-height: 600px;">
-                        </div>
-                    {% endif %}
+                    <div class="col-md-5 d-flex align-items-center justify-content-center">
+                        {% if product.imageURl %}
+                            <img src="{{ product.imageURl }}" alt="{{ product.name }}"
+                                class="img-fluid rounded" style="max-height: 600px;">
+                        {% else %}
+                            <span class="text-muted">Image URL null</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
