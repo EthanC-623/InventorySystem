@@ -4,6 +4,10 @@ from django.db import transaction
 from django.db.models import Max
 from inventory.models import User, Brand, Location, Product, Stock_item, Stock_movement
 
+# WARNING: This command is intended for development/testing purposes only. 
+# It will create a large amount of sample data in the database, and can optionally delete all existing inventory data first. 
+# Do not run this command in a production environment.
+
 BRANDS = ["Games Workshop", "Citadel", "Wizards of the Coast", "Fantasy Flight",
           "Vallejo", "Army Painter", "Ravensburger", "Asmodee"]
 LOCATIONS = ["Hobbiton Tabletop", "Rivendell Games", "Minas Tirith Miniatures"]
@@ -116,6 +120,7 @@ class Command(BaseCommand):
                     productId=p,
                     locationId=loc,
                     quantity=random.randint(0, 60),
+                    reservedQuantity=random.randint(0, 10),
                     reorderThreshold=random.choice([0, 5, 10, 15]),
                 ))
         Stock_item.objects.bulk_create(stock, batch_size=500)

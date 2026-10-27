@@ -1,0 +1,72 @@
+<div class="row">
+    <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+                <div class="card">
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                Filter
+                            </button>
+                            <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
+
+                                <div class="mb-3">
+                                    <label for="filter-reason" class="form-label">Reasons</label>
+                                    <select name="reason" id="filter-reason" class="form-select form-select-sm">
+                                        <option value="">All reasons</option>
+                                    {% for reason in reasons %}
+                                        <option value="{{ reason.0 }}"
+                                                {% if request.GET.reason == reason.0|stringformat:"s" %}selected{% endif %}>
+                                            {{ reason.1 }}
+                                        </option>
+                                    {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'stockMovement' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        {% if active_reason %}
+                            <span class="badge text-bg-primary">Reason: {{ active_reason }}</span>
+                        {% endif %}
+
+                    </div>
+                    <table id="stockMovementTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>id</th>
+                                <th>Stock Item</th>
+                                <th>Reason</th>
+                                <th>Quantity Delta</th>
+                                <th>Reference</th>
+                                <th>Note</th>
+                                <th>Created By</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in stockMovements_data %}
+                            <tr data-href="">
+                                <td>{{ movement.id }}</td>
+                                <td>{{ movement.stockItemId }}</td>
+                                <td>{{ movement.get_movementReason_display }}</td>
+                                <td>{{ movement.quantityDelta }}</td>
+                                <td>{{ movement.reference }}</td>
+                                <td>{{ movement.note }}</td>
+                                <td>{{ movement.created_by }}</td>
+                                <td>{{ movement.created_at }}</td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>  
+            
+        </div>
+    </div>
+</div>

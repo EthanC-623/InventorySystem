@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db.models import F
-from inventory.models import Brand, Location, Product, Stock_item
+from inventory.models import Brand, Location, Product, Stock_item, Stock_movement, User
 
 # Create your views here.
 def home(request):
@@ -84,5 +84,21 @@ def viewProduct(request, product_id):
 def reports(request):
     return render(request, "reports.html")
 
-def sales(request):
-    return render(request, "sales.html")
+def stockMovement(request):
+    stockMovements_data = Stock_movement.objects.select_related("stockItemId")
+
+    reason = request.GET.get("reason", "")
+    
+    active_reason = None
+    
+    if reason in Stock_movement.MovementReason.values:
+        active_reason = Stock_movement.MovementReason(reason).label
+        stockMovements_data = stockMovements_data.filter(movementReason=reason)
+    
+    context = {
+        "stockMovements_data": stockMovements_data,
+        "reasons": Stock_movement.MovementReason.choices,
+        "active_reason": active_reason,
+
+    }
+    return render(request, "stockMovement.html", context)

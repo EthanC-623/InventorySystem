@@ -56,9 +56,9 @@
             </a>
 					</li>
 
-					<li class="sidebar-item {% if 'sales' in request.path %}active{% endif %}">
-						<a class="sidebar-link" href="{% url 'sales' %}">
-              <i class="align-middle" data-feather="shopping-cart"></i> <span class="align-middle">Sales</span>
+					<li class="sidebar-item {% if 'stock-movement' in request.path %}active{% endif %}">
+						<a class="sidebar-link" href="{% url 'stockMovement' %}">
+              <i class="align-middle" data-feather="shopping-cart"></i> <span class="align-middle">Stock Movement</span>
             </a>
 					</li>
 
@@ -203,6 +203,15 @@
     	new DataTable('#inventoryTable', {
 			columnDefs: [
 				{ target: 6, orderable: false },
+			],
+			pageLength: 25,
+		});
+	</script>
+	<script defer>
+    	new DataTable('#stockMovementTable', {
+			columnDefs: [
+				{ target: 4, orderable: false },	
+				{ target: 5, orderable: false },	
 			],
 			pageLength: 25,
 		});
