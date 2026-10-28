@@ -68,7 +68,9 @@
                                 <td>{{ inventory_item.quantity }}</td>
                                 <td>{{ inventory_item.reservedQuantity }}</td>
                                 <td>{{ inventory_item.reorderThreshold }}</td>
-                                <td>{{ inventory_item.updated_at }}</td>
+                                <td data-order="{{ inventory_item.updated_at|date:'Y-m-d H:i:s' }}">
+                                    {{ inventory_item.updated_at|date:"d M Y H:i" }}
+                                </td>
                                 <td>
                                     <a href="{% url 'viewProduct' inventory_item.productId.id %}" class="btn btn-sm btn-outline-primary">View</a>
                                     <a href="{% url 'viewProduct' inventory_item.productId.id %}" class="btn btn-sm btn-outline-danger">Delete</a>

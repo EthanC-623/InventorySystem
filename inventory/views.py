@@ -81,16 +81,20 @@ def viewProduct(request, product_id):
     }
     return render(request, "viewProduct.html", context)
 
-def reports(request):
-    return render(request, "reports.html")
-
 def stockMovement(request):
     stockMovements_data = Stock_movement.objects.select_related("stockItemId")
 
     reason = request.GET.get("reason", "")
-    
+    location = request.GET.get("location", "")
+
+    active_location = None
     active_reason = None
-    
+
+    if location.isdigit():
+        active_location = Location.objects.filter(id=location).first()
+        if active_location:
+            stockMovements_data = stockMovements_data.filter(locationId=location)
+
     if reason in Stock_movement.MovementReason.values:
         active_reason = Stock_movement.MovementReason(reason).label
         stockMovements_data = stockMovements_data.filter(movementReason=reason)
@@ -98,7 +102,36 @@ def stockMovement(request):
     context = {
         "stockMovements_data": stockMovements_data,
         "reasons": Stock_movement.MovementReason.choices,
+        "locations": Location.objects.order_by("name"),
         "active_reason": active_reason,
-
+        "active_location": active_location,
     }
+
     return render(request, "stockMovement.html", context)
+
+def reports(request):
+    stockMovements_data = Stock_movement.objects.select_related("stockItemId")
+    inventory_data = Stock_item.objects.select_related("locationId")
+
+    location = request.GET.get("location", "")
+
+    active_location = None
+
+    if location.isdigit():
+        active_location = Location.objects.filter(id=location).first()
+        if active_location:
+            stockMovements_data = stockMovements_data.filter(locationId=location)
+
+    if location.isdigit():
+        active_location = Location.objects.filter(id=location).first()
+        if active_location:
+            inventory_data = inventory_data.filter(locationId=location)
+    
+    context = {
+        "stockMovements_data": stockMovements_data,
+        "inventory_data": inventory_data,
+        "reasons": Stock_movement.MovementReason.choices,
+        "locations": Location.objects.order_by("name"),
+        "active_location": active_location,
+    }
+    return render(request, "reports.html", context)

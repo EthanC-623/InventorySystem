@@ -1,5 +1,7 @@
 import random
 from django.core.management.base import BaseCommand
+from datetime import timedelta
+from django.utils import timezone
 from django.db import transaction
 from django.db.models import Max
 from inventory.models import User, Brand, Location, Product, Stock_item, Stock_movement
@@ -62,6 +64,26 @@ CATALOG = {
         (2, 30)),
 }
 
+# reason: ((min, max) quantity change, relative weight)
+MOVEMENTS = {
+    "SALE":              ((-5, -1),   50),   # by far the most common
+    "PURCHASE":          ((10, 50),   12),   # regular restocking
+    "RETURN":            ((1, 3),      6),   # some customers return items
+    "TRANSFER_IN":       ((5, 25),     6),   # stock moved between stores
+    "TRANSFER_OUT":      ((-25, -5),   6),
+    "EVENT_USAGE":       ((-10, -2),   5),   # demos and in-store events
+    "STOCK_TAKE":        ((-3, 3),     5),   # periodic count corrections
+    "MANUAL_ADJUSTMENT": ((-5, 5),     3),   # occasional fixes
+    "DAMAGE":            ((-3, -1),    2),   # rare
+}
+
+
+def make_delta(reason):
+    low, high = MOVEMENTS[reason][0]
+    delta = 0
+    while delta == 0:                 # a movement of 0 is meaningless
+        delta = random.randint(low, high)
+    return delta
 
 def make_name(category, brand, number):
     pool, _ = CATALOG[category]
@@ -71,6 +93,15 @@ def make_name(category, brand, number):
         return f"{brand} {base}"
     return f"{base} ({brand}) #{number}"
 
+def random_time_in_past_year():
+    day = timezone.now() - timedelta(days=random.randint(0, 364))
+    return day.replace(hour=random.randint(9, 17), minute=random.randint(0, 59),
+                        second=random.randint(0, 59), microsecond=0)
+
+def random_time_between(start, end):
+    """Random datetime between start and end."""
+    span = int((end - start).total_seconds())
+    return start + timedelta(seconds=random.randint(0, max(span, 0)))
 
 class Command(BaseCommand):
     help = "Populate the database with sample inventory data"
@@ -124,24 +155,52 @@ class Command(BaseCommand):
                     reorderThreshold=random.choice([0, 5, 10, 15]),
                 ))
         Stock_item.objects.bulk_create(stock, batch_size=500)
+        
+        now = timezone.now()
+        year_ago = now - timedelta(days=365)
+        extra_ago = now - timedelta(days=395)   # products exist before the movement window starts
 
+        # Products: created between 13 and 12 months ago
+        for p in products:
+            p.created_at = random_time_between(extra_ago, year_ago)
+            p.updated_at = p.created_at
+        Product.objects.bulk_update(products, ["created_at", "updated_at"], batch_size=500)
+
+        # Stock items: created after their product, before the movement window starts
+        new_stock = Stock_item.objects.filter(productId__in=products).select_related("productId")
+        new_stock = list(new_stock)
+        for si in new_stock:
+            si.created_at = random_time_between(si.productId.created_at, year_ago)
+            si.updated_at = si.created_at
+        Stock_item.objects.bulk_update(new_stock, ["created_at", "updated_at"], batch_size=500)
         user = User.objects.filter(is_superuser=True).first() or User.objects.first()
         if user is None:
             user = User.objects.create_user(username="seed_user", password="seed_password", role=User.Role.ADMIN)
             self.stdout.write(self.style.WARNING("No users found, created 'seed_user' (password: seed_password)."))
 
-        reasons = list(Stock_movement.MovementReason.values)
-        items = list(Stock_item.objects.order_by("?")[:opts["movements"]])
-        Stock_movement.objects.bulk_create([
-            Stock_movement(
+        # Movements
+        reasons = list(MOVEMENTS)
+        weights = [MOVEMENTS[r][1] for r in reasons]
+        items = list(
+            Stock_item.objects.select_related("locationId").order_by("?")[:opts["movements"]]
+        )
+        movements = []
+        for si in items:
+            reason = random.choices(reasons, weights=weights)[0]
+            movements.append(Stock_movement(
                 stockItemId=si,
-                movementReason=random.choice(reasons),
-                quantityDelta=random.randint(-10, 20),
+                locationId=si.locationId,
+                movementReason=reason,
+                quantityDelta=make_delta(reason),
                 created_by=user,
-            )
-            for si in items
-        ])
+            ))
+        Stock_movement.objects.bulk_create(movements)
 
+        # auto_now_add ignores values set before saving, so backdate afterwards
+        for m in movements:
+            m.created_at = random_time_between(max(m.stockItemId.created_at, year_ago), now)
+        Stock_movement.objects.bulk_update(movements, ["created_at"], batch_size=500)
+        
         self.stdout.write(self.style.SUCCESS(
             f"Seeded {len(products)} products, {len(stock)} stock items, {len(items)} movements."
         ))

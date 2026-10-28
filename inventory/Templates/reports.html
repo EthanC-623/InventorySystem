@@ -2,13 +2,85 @@
 
 {% block content %}
 <h1 class="h3 mb-3"><strong>Reports</strong> Page</h1>
-
 <div class="row">
     <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                            Select Location
+                        </button>
+                        <form method="get" class="dropdown-menu p-3" style="min-width: 260px;">
+
+                            <div class="mb-3">
+                                <label for="filter-location" class="form-label">Location</label>
+                                <select name="location" id="filter-location" class="form-select form-select-sm">
+                                    <option value="">All locations</option>
+                                {% for location in locations %}
+                                    <option value="{{ location.id }}"
+                                            {% if request.GET.location == location.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ location }}
+                                    </option>
+                                {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'reports' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% if active_location %}
+                        <span class="badge text-bg-primary">Location: {{ active_location }}</span>
+                    {% endif %}
+                    <div class="col-auto ms-auto text-end mt-n1">
+                        <a href="{% url 'reports' %}" class="btn btn-light bg-white me-2">Export</a>
+                        <a href="{% url 'reports' %}" class="btn btn-primary">Share</a>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-12 col-lg-6">
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">Empty card</h5>
             </div>
+            
+            <div class="card-body">
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Empty card</h5>
+            </div>
+            
+            <div class="card-body">
+        </div>
+    </div>
+    </div><div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Empty card</h5>
+            </div>
+            
+            <div class="card-body">
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Empty card</h5>
+            </div>
+            
             <div class="card-body">
             </div>
         </div>

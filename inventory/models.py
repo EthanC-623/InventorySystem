@@ -103,6 +103,7 @@ class Stock_movement(models.Model):
         
     id = models.BigAutoField(primary_key=True)
     stockItemId = models.ForeignKey('Stock_item', on_delete=models.PROTECT)
+    locationId = models.ForeignKey('Location', on_delete=models.PROTECT)
     movementReason = models.CharField(max_length=20, choices=MovementReason.choices, default=MovementReason.MANUAL_ADJUSTMENT)
     quantityDelta = models.IntegerField()
     reference = models.CharField(max_length=100, null=True, blank=True)
