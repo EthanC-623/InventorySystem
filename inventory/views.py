@@ -126,9 +126,25 @@ def reports(request):
         active_location = Location.objects.filter(id=location).first()
         if active_location:
             inventory_data = inventory_data.filter(locationId=location)
-    
+
+    stockMovement_stats = {}
+    new_value = 0
+    for i in range(len(Stock_movement.MovementReason.choices)):
+        stockMovement_stats[Stock_movement.MovementReason.choices[i][1]] = 0
+        for entry in stockMovements_data:
+            if entry.movementReason == Stock_movement.MovementReason.choices[i][0]:
+                new_value = stockMovement_stats.get(Stock_movement.MovementReason.choices[i][1])
+                new_value += 1
+                stockMovement_stats.update({Stock_movement.MovementReason.choices[i][1]:new_value})
+
+    sortedStockMovement_stats = sorted(stockMovement_stats.items(), key=lambda x:x[1])
+    stockMovement_stats = dict(sortedStockMovement_stats)
+    print(sortedStockMovement_stats)
+  
     context = {
         "stockMovements_data": stockMovements_data,
+        "stockMovement_stats": list(stockMovement_stats.values()),
+        "stockMovement_labels": list(stockMovement_stats.keys()),
         "inventory_data": inventory_data,
         "reasons": Stock_movement.MovementReason.choices,
         "locations": Location.objects.order_by("name"),

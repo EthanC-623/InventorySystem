@@ -1,0 +1,82 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Stock Movement Types</h5>
+    </div>
+    
+    <div class="card-body">
+        <div class="chart chart-sm"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+            <canvas id="chartjs-doughnut-stockMovement" style="display: block; width: 484px; height: 252px;" width="484" height="252" class="chartjs-render-monitor"></canvas>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="chart chart-sm"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+            <canvas id="chartjs-bar-stockMovement" style="display: block; width: 484px; height: 252px;" width="484" height="252" class="chartjs-render-monitor"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Doughnut chart
+			new Chart(document.getElementById("chartjs-doughnut-stockMovement"), {
+				type: "doughnut",
+				data: {
+					labels: {{stockMovement_labels|safe}},
+					datasets: [{
+						data: {{stockMovement_stats|safe}},
+						backgroundColor: [
+							"#fc03e8",
+                            "#ff0400",
+							window.theme.warning,
+							"#7d3d2c",
+                            "#ccff00",
+                            "#03fc52",
+                            window.theme.success,
+                            "#9d00ff",                            
+                            window.theme.primary,
+						],
+						borderColor: "transparent"
+					}]
+				},
+				options: {
+					maintainAspectRatio: true,
+					cutoutPercentage: 55,
+					legend: {
+						display: true,
+					}
+				}
+			});
+		});
+	</script>
+    <script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Doughnut chart
+			new Chart(document.getElementById("chartjs-bar-stockMovement"), {
+				type: "bar",
+				data: {
+					labels: {{stockMovement_labels|safe}},
+					datasets: [{
+						data: {{stockMovement_stats|safe}},
+						backgroundColor: [
+							"#fc03e8",
+                            "#ff0400",
+							window.theme.warning,
+							"#7d3d2c",
+                            "#ccff00",
+                            "#03fc52",
+                            window.theme.success,
+                            "#9d00ff",                            
+                            window.theme.primary,
+						],
+						borderColor: "transparent"
+					}]
+				},
+				options: {
+					maintainAspectRatio: true,
+					legend: {
+						display: false,
+					}
+				}
+			});
+		});
+	</script>
