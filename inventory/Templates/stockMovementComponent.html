@@ -58,6 +58,8 @@
                                 <th>Location</th>
                                 <th>Reason</th>
                                 <th>Quantity Delta</th>
+                                <th>Unit Value</th>
+                                <th>Total Value</th>
                                 <th>Reference</th>
                                 <th>Note</th>
                                 <th>Created By</th>
@@ -72,6 +74,8 @@
                                 <td>{{ movement.locationId }}</td>
                                 <td>{{ movement.get_movementReason_display }}</td>
                                 <td>{{ movement.quantityDelta }}</td>
+                                <td>£{{ movement.unitValue }}</td>
+                                <td>£{{ movement.totalValue }}</td>
                                 <td>{{ movement.reference }}</td>
                                 <td>{{ movement.note }}</td>
                                 <td>{{ movement.created_by }}</td>

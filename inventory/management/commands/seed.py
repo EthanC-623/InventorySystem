@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction
+from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Max
 from inventory.models import User, Brand, Location, Product, Stock_item, Stock_movement
 
@@ -77,6 +78,18 @@ MOVEMENTS = {
     "DAMAGE":            ((-3, -1),    2),   # rare
 }
 
+# movement uses retail value (True) or cost value (False)
+VALUE_FACTOR = {
+    "SALE":              True,
+    "RETURN":            True,
+    "PURCHASE":          False,
+    "TRANSFER_IN":       False,
+    "TRANSFER_OUT":      False,
+    "DAMAGE":            False,
+    "EVENT_USAGE":       False,
+    "STOCK_TAKE":        False,
+    "MANUAL_ADJUSTMENT": False,
+}
 
 def make_delta(reason):
     low, high = MOVEMENTS[reason][0]
@@ -133,13 +146,16 @@ class Command(BaseCommand):
             category = random.choice(list(CATALOG))
             brand = brands[random.choice(BRANDS_BY_CATEGORY[category])]
             low, high = CATALOG[category][1]
+            value=round(random.uniform(low, high), 2)
+            cost_value = Decimal(value * 0.65).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             products.append(Product(
                 name=make_name(category, brand.name, i),
                 sku=f"{brand.name[:3].upper()}-{i:06d}",
                 barcode=f"200{i:09d}",
                 brandId=brand,
                 category=category,
-                price=round(random.uniform(low, high), 2),
+                price=value,
+                costPrice=cost_value,
                 archived=random.random() < 0.1,
             ))
         Product.objects.bulk_create(products, batch_size=500)
@@ -182,16 +198,24 @@ class Command(BaseCommand):
         reasons = list(MOVEMENTS)
         weights = [MOVEMENTS[r][1] for r in reasons]
         items = list(
-            Stock_item.objects.select_related("locationId").order_by("?")[:opts["movements"]]
+            Stock_item.objects.select_related("locationId", "productId")
+            .order_by("?")[:opts["movements"]]
         )
         movements = []
         for si in items:
             reason = random.choices(reasons, weights=weights)[0]
+            delta = make_delta(reason)
+            if VALUE_FACTOR[reason] == True:
+                unit = si.productId.price
+            else:
+                unit = si.productId.costPrice
             movements.append(Stock_movement(
                 stockItemId=si,
                 locationId=si.locationId,
                 movementReason=reason,
-                quantityDelta=make_delta(reason),
+                quantityDelta=delta,
+                unitValue=unit,
+                totalValue=unit * abs(delta),
                 created_by=user,
             ))
         Stock_movement.objects.bulk_create(movements)

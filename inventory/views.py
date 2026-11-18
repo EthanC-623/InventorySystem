@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.db.models import F
+from django.db.models import F, Sum
 from inventory.models import Brand, Location, Product, Stock_item, Stock_movement, User
 
 # Create your views here.
@@ -121,11 +121,26 @@ def reports(request):
         active_location = Location.objects.filter(id=location).first()
         if active_location:
             stockMovements_data = stockMovements_data.filter(locationId=location)
+            inventory_data = inventory_data.filter(locationId=location)
 
     if location.isdigit():
-        active_location = Location.objects.filter(id=location).first()
-        if active_location:
-            inventory_data = inventory_data.filter(locationId=location)
+        total_revenue = Stock_movement.objects.filter(movementReason="SALE", locationId=location).aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
+        total_return_value = Stock_movement.objects.filter(movementReason="RETURN", locationId=location).aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
+        total_stock_value = Stock_item.objects.filter(locationId=location).aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
+        total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE", locationId=location).aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
+    else:
+        total_revenue = Stock_movement.objects.filter(movementReason="SALE").aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
+        total_return_value = Stock_movement.objects.filter(movementReason="RETURN").aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
+        total_stock_value = Stock_item.objects.aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
+        total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE").aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
+
+    rate_of_return = 0
+    if total_return_value and total_revenue:
+        rate_of_return = 100 - ((total_return_value / total_revenue) * 100)
+         # get true total revenue by subtracting total return value
+        total_revenue -= total_return_value
+
+   
 
     stockMovement_stats = {}
     new_value = 0
@@ -139,7 +154,6 @@ def reports(request):
 
     sortedStockMovement_stats = sorted(stockMovement_stats.items(), key=lambda x:x[1])
     stockMovement_stats = dict(sortedStockMovement_stats)
-    print(sortedStockMovement_stats)
   
     context = {
         "stockMovements_data": stockMovements_data,
@@ -149,5 +163,9 @@ def reports(request):
         "reasons": Stock_movement.MovementReason.choices,
         "locations": Location.objects.order_by("name"),
         "active_location": active_location,
+        "rate_of_return": rate_of_return,
+        "total_revenue": total_revenue,
+        "total_stock_value": total_stock_value,
+        "total_purchase_value": total_purchase_value,
     }
     return render(request, "reports.html", context)
