@@ -123,24 +123,52 @@ def reports(request):
             stockMovements_data = stockMovements_data.filter(locationId=location)
             inventory_data = inventory_data.filter(locationId=location)
 
+    # time based method
+    # if location.isdigit():
+    #     total_revenue = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="SALE", locationId=location).aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
+    #     total_return_value = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11',movementReason="RETURN", locationId=location).aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
+    #     total_stock_value = Stock_item.objects.filter(locationId=location).aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
+    #     total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE", locationId=location).aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
+    # else:
+    #     total_revenue = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="SALE").aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
+    #     total_return_value = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="RETURN").aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
+    #     total_stock_value = Stock_item.objects.aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
+    #     total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE").aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
+
     if location.isdigit():
         total_revenue = Stock_movement.objects.filter(movementReason="SALE", locationId=location).aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
         total_return_value = Stock_movement.objects.filter(movementReason="RETURN", locationId=location).aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
         total_stock_value = Stock_item.objects.filter(locationId=location).aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
         total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE", locationId=location).aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
+        
+        item_sales = Stock_movement.objects.filter(movementReason="SALE", locationId=location)
     else:
         total_revenue = Stock_movement.objects.filter(movementReason="SALE").aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
         total_return_value = Stock_movement.objects.filter(movementReason="RETURN").aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
         total_stock_value = Stock_item.objects.aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
         total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE").aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
 
+        item_sales = Stock_movement.objects.filter(movementReason="SALE")
+
+    combined_sales = {}
+    for sale in item_sales:
+        product_id = sale.stockItemId.productId
+        if product_id not in combined_sales:
+            combined_sales[product_id] = [0, 0, "", 0]
+        combined_sales[product_id][0] += float(sale.totalValue)
+        combined_sales[product_id][1] -= sale.quantityDelta
+        combined_sales[product_id][2] = sale.stockItemId.productId.imageURl
+        combined_sales[product_id][3] = sale.stockItemId.productId.id
+
+    ordered_sales = {k: v for k, v in sorted(combined_sales.items(), key=lambda item: item[1][0], reverse=True)}
+    top_sales = dict(list(ordered_sales.items())[:10])
+
+    
     rate_of_return = 0
     if total_return_value and total_revenue:
-        rate_of_return = 100 - ((total_return_value / total_revenue) * 100)
+        rate_of_return = ((total_return_value / total_revenue) * 100)
          # get true total revenue by subtracting total return value
         total_revenue -= total_return_value
-
-   
 
     stockMovement_stats = {}
     new_value = 0
@@ -167,5 +195,6 @@ def reports(request):
         "total_revenue": total_revenue,
         "total_stock_value": total_stock_value,
         "total_purchase_value": total_purchase_value,
+        "top_sales": top_sales,
     }
     return render(request, "reports.html", context)

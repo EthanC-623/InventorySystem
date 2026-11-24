@@ -102,8 +102,6 @@ def make_name(category, brand, number):
     pool, _ = CATALOG[category]
     base = random.choice(pool)
     # Paints, books and TCG items read better with a brand/series prefix
-    if category == "PAINT":
-        return f"{brand} {base}"
     return f"{base} ({brand}) #{number}"
 
 def random_time_in_past_year():

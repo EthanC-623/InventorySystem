@@ -91,6 +91,50 @@
                     </div>
                 </div>
             </div>
+            <div class="row"> 
+                <div class="col-12 col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-0">Highest Revenue Products</h5>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40%;">Name</th>
+                                        <th style="width:25%">Sold</th>
+                                        <th style="width:25%">Revenue</th>
+                                        <th style="width:25%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for product in top_sales.items %}
+                                    <tr>
+                                        <td><row>
+                                                <div class="col">
+                                                    {% if product.1.2 %}
+                                                        <img src="{{ product.1.2 }}" width="48" height="48" class="rounded-circle me-2">
+                                                    {% else %}
+                                                        <span class="text-muted">Image URL null</span>
+                                                    {% endif %}
+                                                    
+                                                </div>
+                                                <div class="col">
+                                                   {{ product.0 }}     
+                                                </div>    
+                                            </row>
+                                        </td>
+                                        <td>{{ product.1.1 }}</td>
+                                        <td>£{{ product.1.0|floatformat:2 }}</td>
+                                        <td>
+                                            <a href="{% url 'viewProduct' product.1.3 %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
