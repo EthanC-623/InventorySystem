@@ -1,0 +1,39 @@
+
+<div class="chart chart-sm"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+    <canvas id="chartjs-stockCategory" style="display: block; width: 484px; height: 252px;" width="484" height="252" class="chartjs-render-monitor"></canvas>
+</div>
+
+
+<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Doughnut chart
+			new Chart(document.getElementById("chartjs-stockCategory"), {
+				type: "doughnut",
+				data: {
+					labels: {{stockCategory_labels|safe}},
+					datasets: [{
+						data: {{stockCategory_stats|safe}},
+						backgroundColor: [
+							"#fc03e8",
+                            "#ff0400",
+							window.theme.warning,
+							"#7d3d2c",
+                            "#ccff00",
+                            "#03fc52",
+                            window.theme.success,
+                            "#9d00ff",                            
+                            window.theme.primary,
+						],
+						borderColor: "transparent"
+					}]
+				},
+				options: {
+					maintainAspectRatio: true,
+					cutoutPercentage: 55,
+					legend: {
+						display: true,
+					}
+				}
+			});
+		});
+	</script>

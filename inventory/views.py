@@ -18,6 +18,7 @@ def products(request):
     active_brand = None
     active_archived = None
 
+    # filter data based on the selected archived status
     if archived == "no":
         products_data = products_data.filter(archived=False)
         active_archived = "Active only"
@@ -25,11 +26,13 @@ def products(request):
         products_data = products_data.filter(archived=True)
         active_archived = "Archived only"
 
+    # filter data based on the selected brand
     if brand.isdigit():
         active_brand = Brand.objects.filter(id=brand).first()
         if active_brand:
             products_data = products_data.filter(brandId=brand)
 
+    # filter data based on the selected category
     if category in Product.Category.values:
         active_category = Product.Category(category).label
         products_data = products_data.filter(category=category)
@@ -53,6 +56,7 @@ def inventory(request):
     active_location = None
     active_reorderStatus = None
 
+    # filter data based on the selected reorder status
     if reorderStatus == "Not Reordering":
         inventory_data = inventory_data.filter(quantity__gt=F("reorderThreshold"))
         active_reorderStatus = "Not Reordering"
@@ -60,6 +64,7 @@ def inventory(request):
         inventory_data = inventory_data.filter(quantity__lte=F("reorderThreshold"))
         active_reorderStatus = "Needs Reordering"
 
+    # filter data based on the selected location
     if location.isdigit():
         active_location = Location.objects.filter(id=location).first()
         if active_location:
@@ -90,11 +95,13 @@ def stockMovement(request):
     active_location = None
     active_reason = None
 
+    # filter data based on the selected location
     if location.isdigit():
         active_location = Location.objects.filter(id=location).first()
         if active_location:
             stockMovements_data = stockMovements_data.filter(locationId=location)
 
+    # filter data based on the selected reason
     if reason in Stock_movement.MovementReason.values:
         active_reason = Stock_movement.MovementReason(reason).label
         stockMovements_data = stockMovements_data.filter(movementReason=reason)
@@ -117,25 +124,34 @@ def reports(request):
 
     active_location = None
 
+    # filter data based on the selected location
     if location.isdigit():
         active_location = Location.objects.filter(id=location).first()
         if active_location:
             stockMovements_data = stockMovements_data.filter(locationId=location)
             inventory_data = inventory_data.filter(locationId=location)
 
+    # get stock category stats for chart
+    stockCategory_data = inventory_data.values_list("productId__category").annotate(total=Sum("quantity")).order_by("productId__category")
+    stockCategory_stats = [item[1] for item in stockCategory_data]
+    stockCategory_labels = [Product.Category(item[0]).label for item in stockCategory_data]
+        
     # time based method
     # if location.isdigit():
+        # filter data based on the selected location
     #     total_revenue = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="SALE", locationId=location).aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
     #     total_return_value = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11',movementReason="RETURN", locationId=location).aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
     #     total_stock_value = Stock_item.objects.filter(locationId=location).aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
     #     total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE", locationId=location).aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
     # else:
+        # filter data without location
     #     total_revenue = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="SALE").aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
     #     total_return_value = Stock_movement.objects.filter(created_at__year='2026', created_at__month='11', movementReason="RETURN").aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
     #     total_stock_value = Stock_item.objects.aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
     #     total_purchase_value = Stock_movement.objects.filter(movementReason="PURCHASE").aggregate(total_purchase_value=Sum("totalValue"))["total_purchase_value"]
 
     if location.isdigit():
+        # filter data based on the selected location
         total_revenue = Stock_movement.objects.filter(movementReason="SALE", locationId=location).aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
         total_return_value = Stock_movement.objects.filter(movementReason="RETURN", locationId=location).aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
         total_stock_value = Stock_item.objects.filter(locationId=location).aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
@@ -143,6 +159,7 @@ def reports(request):
         
         item_sales = Stock_movement.objects.filter(movementReason="SALE", locationId=location)
     else:
+        # filter data without location
         total_revenue = Stock_movement.objects.filter(movementReason="SALE").aggregate(total_revenue=Sum("totalValue"))["total_revenue"]
         total_return_value = Stock_movement.objects.filter(movementReason="RETURN").aggregate(total_return_value=Sum("totalValue"))["total_return_value"]
         total_stock_value = Stock_item.objects.aggregate(total_stock_value=Sum("productId__price"))["total_stock_value"]
@@ -150,7 +167,12 @@ def reports(request):
 
         item_sales = Stock_movement.objects.filter(movementReason="SALE")
 
+    # filter low stock items
+    low_stock_items = inventory_data.filter(quantity__lte=F("reorderThreshold")).order_by("quantity")
+    
+    # merge sales data by productId and get top selling items
     combined_sales = {}
+
     for sale in item_sales:
         product_id = sale.stockItemId.productId
         if product_id not in combined_sales:
@@ -161,15 +183,15 @@ def reports(request):
         combined_sales[product_id][3] = sale.stockItemId.productId.id
 
     ordered_sales = {k: v for k, v in sorted(combined_sales.items(), key=lambda item: item[1][0], reverse=True)}
-    top_sales = dict(list(ordered_sales.items())[:10])
+    top_sales = dict(list(ordered_sales.items())[:25])
 
-    
+    # get true total revenue by subtracting total return value
     rate_of_return = 0
     if total_return_value and total_revenue:
         rate_of_return = ((total_return_value / total_revenue) * 100)
-         # get true total revenue by subtracting total return value
         total_revenue -= total_return_value
 
+    # get stock movement stats for chart
     stockMovement_stats = {}
     new_value = 0
     for i in range(len(Stock_movement.MovementReason.choices)):
@@ -187,7 +209,10 @@ def reports(request):
         "stockMovements_data": stockMovements_data,
         "stockMovement_stats": list(stockMovement_stats.values()),
         "stockMovement_labels": list(stockMovement_stats.keys()),
+        "stockCategory_stats": stockCategory_stats,
+        "stockCategory_labels": stockCategory_labels,
         "inventory_data": inventory_data,
+        "low_stock_items": low_stock_items,
         "reasons": Stock_movement.MovementReason.choices,
         "locations": Location.objects.order_by("name"),
         "active_location": active_location,
